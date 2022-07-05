@@ -1,0 +1,140 @@
+#include<lpc21xx.h>
+#include<stdio.h>
+
+voidlcd_init(void);
+voidclr_disp(void);
+voidlcd_com(void);
+voidlcd_data(void);
+voidwr_cn(void);
+voidwr_dn(void);
+void delay(unsigned int);
+voidinit_port(void);
+
+unsigned char temp,temp1;
+unsignedint r,r1;
+
+unsigned char *ptr,disp[] = "SHASHIDHARA";
+unsigned char disp0[] = "MCE HASSAN";
+
+int main()
+{	
+
+	init_port();            //port intialisation
+	delay(3200);			//delay for 1ms
+	
+	lcd_init();             //lcdintialisation
+	delay(3200);			//delay
+clr_disp();				//clear display
+	delay(500);             //delay
+
+	ptr = disp;
+	temp1 = 0x80;			// Display starting address, 1st line
+	lcd_com();
+	delay(800); 
+
+	while(*ptr!='\0')
+    {
+	temp1 = *ptr;
+lcd_data();
+	ptr ++;
+    } 
+
+	ptr = disp0;
+	temp1 = 0xc0;			// Display starting address, 2nd line
+	lcd_com();
+	delay(800); 
+
+	while(*ptr!='\0')
+    {
+	temp1 = *ptr;
+lcd_data();
+	ptr ++;
+    } 
+	
+	}
+							
+void lcd_init (void)
+{
+
+// load command for lcd function setting with lcd in 4 bit mode,
+// 2 line and 5x7 matrix display
+
+	temp1 = 0x28;//Function Set: 4-bit, 2 Line, 5x7 Dots
+	lcd_com();
+	delay(3200);					
+
+// load a command for display on, cursor on and blinking off		
+	temp1 = 0x0C;	//Display on Cursor off	
+	lcd_com();
+	delay(800);  				
+	
+// command for cursor increment after data dump	
+	temp1 = 0x06;
+	lcd_com();
+	delay(800);  				
+	
+	/*temp1 = 0x80;
+	lcd_com();
+	delay(800); */ 		
+}
+
+void lcd_data(void)
+{   	
+temp = temp1 & 0xf0;
+wr_dn();
+temp= temp1 & 0x0f;	
+temp= temp << 4;
+wr_dn();
+delay(100);					
+} 
+
+void wr_dn(void)			////write data reg
+{  	
+	IO0CLR  = 0x000000FC;	// clear the port lines.
+	IO0SET = temp;			// Assign the value to the PORT lines 
+	IO0SET = 0x00000004;   	// set bit  RS = 1 	
+	IO0SET = 0x00000008; 
+delay(10);	// E=1, enable
+	IO0CLR = 0x00000008;     //e=0, disable
+}
+
+void lcd_com(void) //send 4 bits of 2 data
+{
+temp = temp1 & 0xf0;//write 1st digit
+wr_cn();//write 1st digit
+temp = temp1 & 0x0f;
+temp = temp << 4; 
+wr_cn();//write 2nd digit
+
+delay(500);
+}
+
+void wr_cn(void)                //write command reg
+{ 
+	IO0CLR  = 0x000000FC;		// clear the port lines.
+	IO0SET 	= temp;				// Assign the value to the PORT lines    
+	IO0SET 	= 0x00000008;
+delay(10);	// E=1 enable lcd
+		IO0CLR  = 0x00000008; //disable lcd
+}
+	
+void clr_disp(void)
+{
+// command to clear lcd display
+    temp1 = 0x01;
+lcd_com();
+					
+}  
+
+void delay(unsigned int r1)
+{
+	for(r=0;r<r1;r++);
+} 
+										
+void init_port()
+{    
+
+	IO0DIR = 0x000000FC;	//configure o/p lines for lcd
+	
+	
+}
