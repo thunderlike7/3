@@ -1,0 +1,36 @@
+              TTL NUMBER OF ONES & ZEROS 
+              AREA PROG8, CODE, READONLY
+              ENTRY
+
+START         LDR RO, ISRC 
+              EOR R5, R5, R5
+              EOR R6, R6, R6
+              MOV R2, #2
+Up            MOV R1, #8
+              LDRB R3, [RO]
+
+Top           TST R3, #01
+              BEQ Inc Zero
+              ADD R6, #1
+              B Down
+
+Inc Zero      ADD R5, #1
+Down          LSR R3, #1
+              SUB R1, #1
+              CMP R1, #0
+              BNE Top
+              ADD RO, #1
+              SUB R2, #1
+              CMP R2, #0
+              BNE Up
+              LDR RO, ONES
+              STRB R6, [RO]
+              LDR RO, ZEROS
+              STRB R5, [RO]
+STOP          B STOP
+              AREA SRC, DATA, READONLY
+              DCB 0x01, 0x0F
+              AREA DST, DATA, READWRITE
+ONES          DCB 0
+ZEROS         DCB 0
+              END
