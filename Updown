@@ -1,0 +1,33 @@
+int main () 
+{ 
+unsigned nhv=0; 
+ PINSEL0 = 0x00000000; 
+ IO0DIR = 0x00FF0000;//enable for out port 
+ 
+ while(1) 
+ { 
+ for(hv=0; hv<= 0x20; hv++) 
+ { 
+ nhv= (~hv); // for incrementing display from 00 to 0x20 
+ nhv=nhv& 0x000000ff; 
+ IO0CLR=0x00ff0000; 
+ IO0SET=(nhv<< 16); 
+ delay(); 
+ } 
+ for(hv=0x20; hv>= 0; hv--) 
+ { 
+ nhv= (~hv); // for decrementing display from 0x20 to 00 
+ nhv=nhv& 0x000000ff; 
+ IO0CLR=0x00ff0000; 
+ IO0SET=(nhv<< 16); 
+ delay(); 
+ } 
+ } 
+} 
+void delay(void) 
+{ 
+ unsigned count; 
+ 
+for(count=0; count< 1385000; count++) 
+ {} 
+}
