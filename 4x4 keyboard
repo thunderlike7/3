@@ -1,0 +1,209 @@
+#include<lpc21xx.h>
+#include<stdio.h>
+
+/******* FUNCTION PROTOTYPE*******/
+
+void lcd_init(void);
+void clr_disp(void);
+void lcd_com(void);
+void lcd_data(void);
+void wr_cn(void);
+void wr_dn(void);
+void scan(void);
+void get_key(void);
+void display(void);
+void delay(unsigned int);
+void init_port(void);
+
+unsigned long int scan_code[16]= {0x00EE0000,0x00ED0000,0x00EB0000,0x00E70000,
+                                  0x00DE0000,0x00DD0000,0x00DB0000,0x00D70000,
+                                  0x00BE0000,0x00BD0000,0x00BB0000,0x00B70000,
+                                  0x007E0000,0x007D0000,0x007B0000,0x00770000};
+
+
+unsigned char ASCII_CODE[16]= {'0','1','2','3',
+                               '4','5','6','7',
+                               '8','9','A','B',
+                               'C','D','E','F'};	 
+
+unsigned char  row,col;										  									
+unsigned char temp,flag,i,result,temp1;
+unsigned int r,r1;
+unsigned long int var,var1,var2,res1,temp2,temp3,temp4;
+int main()
+{	
+    
+	init_port();            //port intialisation
+ 	delay(3200);			//delay for 1ms
+	lcd_init();             //lcd intialisation
+	delay(3200);			//delay
+    clr_disp();				//clear display
+	delay(500);             //delay
+		
+  	while(1)	
+	{	         
+    	get_key();
+        display();		
+	}
+      
+}  //end of main()	
+
+void get_key(void)               //get the key from the keyboard
+{
+	unsigned int  i;	
+	flag = 0x00;
+    IO1SET=0x000f0000;  //set 1s for p16 to p19 (cols i/p)      
+	while(1)
+	{		
+    	for(row=0X00;row<0X04;row++) //Writing one for rows, row is found 
+        {					
+        	if( row == 0x03)
+            { 
+            	temp3=0x00700000;		    }
+            else if(row == 0x02)
+            { 
+            	temp3=0x00B00000;
+		    }
+		    else if(row == 0x01)
+		    {
+            	temp3=0x00D00000;
+		    }
+            else if(row ==0x00)
+		    {
+            	temp3=0x00E00000;
+		    }	
+	  	  	var1 = temp3;
+          	 // each time var1 value is put to port1
+		IO1SET = var1;
+          	IO1CLR =~var1;		// Once again Conforming (clearing all other bits)
+          	scan();//find column
+          	delay(100);			//delay
+          	if(flag == 0xff) 
+          	break;
+       	} // end of for
+		if(flag == 0xff)
+		break;
+	}  // end of while	
+  
+    for(i=0;i<16;i++)
+    {
+    	if(scan_code[i] == res1)      //equate the scan_code with res1
+    	{
+			result =  ASCII_CODE[i];    //same position value of ascii code
+			break;                      //is assigned to result
+      	}
+    }
+}// end of get_key(); 
+
+void scan(void)
+{	
+    unsigned long int t;
+    temp2 = IO1PIN;                             // status of port1, key pressed value
+    temp2 = temp2 & 0x000F0000;                 // Verifying column key
+    
+        if(temp2 != 0x000F0000)                // Check for Key Press or Not, store the value in res1
+        {
+        	flag = 0xff;
+          	res1 = temp2; 
+                res1=res1 | temp3;//final scan value is stored in res1
+        }
+        else
+        {
+        	flag = 0x00;
+        }
+    }  // end of scan()
+
+void lcd_init (void)
+{
+
+// load command for lcd function setting with lcd in 4 bit mode,
+// 2 line and 5x7 matrix display
+
+	temp1 = 0x28;//Function Set: 4-bit, 2 Line, 5x7 Dots
+	lcd_com();
+	delay(3200);					
+
+// load a command for display on, cursor on and blinking off		
+	temp1 = 0x0C;	//Display on Cursor off	
+	lcd_com();
+	delay(800);  				
+	
+// command for cursor increment after data dump	
+	temp1 = 0x06;
+	lcd_com();
+	delay(800);  				
+	
+	/*temp1 = 0x80;
+	lcd_com();
+	delay(800); */ 		
+}
+
+void lcd_data(void)
+{   	
+temp = temp1 & 0xf0;
+wr_dn();
+temp= temp1 & 0x0f;	
+temp= temp << 4;
+wr_dn();
+delay(100);					
+} 
+
+void wr_dn(void)			////write data reg
+{  	
+	IO0CLR  = 0x000000FC;	// clear the port lines.
+	IO0SET = temp;			// Assign the value to the PORT lines 
+	IO0SET = 0x00000004;   	// set bit  RS = 1 	
+	IO0SET = 0x00000008; 
+delay(10);	// E=1, enable
+	IO0CLR = 0x00000008;     //e=0, disable
+}
+
+void lcd_com(void) //send 4 bits of 2 data
+{
+temp = temp1 & 0xf0;//write 1st digit
+wr_cn();//write 1st digit
+temp = temp1 & 0x0f;
+temp = temp << 4; 
+wr_cn();//write 2nd digit
+
+delay(500);
+}
+
+void wr_cn(void)                //write command reg
+{ 
+	IO0CLR  = 0x000000FC;		// clear the port lines.
+	IO0SET 	= temp;				// Assign the value to the PORT lines    
+	IO0SET 	= 0x00000008;
+delay(10);	// E=1 enable lcd
+		IO0CLR  = 0x00000008; //disable lcd
+}
+	
+void clr_disp(void)
+{
+// command to clear lcd display
+    temp1 = 0x01;
+lcd_com();
+					
+}  
+
+			 	 	 	    	 
+void display(void)
+{	  
+temp1=0x80;//lcd command display  address for key value, from 1st line column 1
+	lcd_com();
+    temp1 = result;    
+    lcd_data();	
+}  
+
+
+
+void delay(unsigned int r1)
+{
+	for(r=0;r<r1;r++);
+} 
+      										 
+void init_port()
+{    
+    IO0DIR = 0x000000FC;	//configure o/p lines for lcd 
+	IO1DIR = 0XFFF0FFFF; //configure i/p columns,o/p rows for key board
+}
