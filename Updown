@@ -1,5 +1,4 @@
 #include <LPC21xx.h> 
-
 void delay(void); 
 long hv;
 int main () 
