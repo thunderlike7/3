@@ -1,19 +1,25 @@
-TTL SQUARE OF A MUNBER
-AREA PROG5, CODE, READONLY
-ENTRY
-START
-LDR R0, =LOOKUP
-LDR R1, VALUE
-MOV R1, R1, LSL #0x2;
-LDR R2, [R0, R1]
-LDR R3, =RESULT
-STR R2, [R3]
-STOP B STOP
-AREA DATA1, DATA, READONLY
-LOOKUP DCD 0,1,4,9,16,25,36,49,64,81,100 ; Lookup table 
-VALUE DCD 9
-ALIGN
-AREA DATA2, DATA
-RESULT DCD 0
-ALIGN
-END
+        area data,code,readonly
+        LDR r0, =TABLE1
+        mov r1, #6
+loop 
+        cmp r1, #1
+        beq store
+        sub r1, r1, #1
+        add r0, r0, #4
+        b loop
+
+store 
+        LDR r3, [r0]
+XSS     B XSS
+;lookup table contains Squares of numbers from 0 to 10 (in hex)
+TABLE1    DCD 0X00000001  ;  SQUARE OF 1  = 1
+          DCD 0X00000004  ;  SQUARE OF 2  = 4
+          DCD 0X00000009  ;  SQUARE OF 3  = 9
+          DCD 0X00000010  ;  SQUARE OF 4  = 16
+          DCD 0X00000019  ;  SQUARE OF 5  = 25
+          DCD 0X00000024  ;  SQUARE OF 6  = 36
+          DCD 0X00000031  ;  SQUARE OF 7  = 49
+          DCD 0X00000040  ;  SQUARE OF 8  = 64
+          DCD 0X00000051  ;  SQUARE OF 9  = 81
+          DCD 0X00000064  ;  SQUARE OF 10 = 100
+          end
