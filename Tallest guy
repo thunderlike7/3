@@ -1,1 +1,25 @@
+        area big,code,readonly
+        ldr r0, =tallest
+        mov r1, #10
+        ldr r3, [r0]
+rpt     cmp r1, #1
+        beq store
+        sub r1, r1, #1
+        add r0, r0, #4
+        ldr r3, [r0]
+        cmp r2, r3
+        blt rpt
+        mov r3, r2
+        b rpt
+store   b store
 
+tallest     DCD  0X00000001
+            DCD  0X00000004
+            DCD  0X00000018
+            DCD  0X00000015
+            DCD  0X00000020
+            DCD  0X00000025
+            DCD  0X00000029
+            DCD  0X00000034
+            DCD  0X00000027
+            DCD  0X00000064
