@@ -1,5 +1,5 @@
         area data,code,readonly
-        LDR r0, =TABLE1
+        ldr r0, =TABLE1
         mov r1, #6
 loop 
         cmp r1, #1
@@ -9,7 +9,7 @@ loop
         b loop
 
 store 
-        LDR r3, [r0]
+        ldr r3, [r0]
 XSS     B XSS
 ;lookup table contains Squares of numbers from 0 to 10 (in hex)
 TABLE1    DCD 0X00000001  ;  SQUARE OF 1  = 1
